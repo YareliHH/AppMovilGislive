@@ -1,9 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable import/no-unresolved */
-// ❌ ELIMINA ESTAS DOS LÍNEAS
-// import MockAdapter from 'axios-mock-adapter';
-// import axios from 'axios';
 
+// En src/utils/__tests__/apiIntegracion.test.js
 import {
   fetchProductos,
   fetchProductoById,
@@ -15,19 +13,16 @@ import {
   createProducto,
   updateProducto,
   deleteProducto,
-} from '@/api/productos';
-
-// Mock de fetch
+} from '../../api/productos'; // ← Ruta relativa
 global.fetch = jest.fn();
 
 describe('Integración Frontend-Backend para Productos', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // axiosMock = new MockAdapter(axios);
+
   });
 
   afterEach(() => {
-    // axiosMock.reset();
   });
 
   
@@ -62,5 +57,4 @@ describe('Integración Frontend-Backend para Productos', () => {
     expect(response).toEqual(mockProductos);
   });
 
-  // ... resto de tus tests
 });
