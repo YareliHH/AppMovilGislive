@@ -78,19 +78,6 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Verificar credenciales de Android
-        run: |
-          echo "🔐 Verificando credenciales de Android..."
-          if ! eas credentials -p android --profile preview --non-interactive 2>&1 | grep -q "Keystore"; then
-            echo "❌ Error: No se encontraron credenciales de Android"
-            echo "📝 Por favor, ejecuta localmente:"
-            echo "   eas login"
-            echo "   eas credentials"
-            echo "   Y configura el keystore para el perfil 'preview'"
-            exit 1
-          fi
-          echo "✅ Credenciales verificadas correctamente"
-
       - name: Generar APK con EAS Build
         run: |
           echo "🚀 Iniciando build de APK..."
