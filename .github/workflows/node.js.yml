@@ -102,6 +102,16 @@ jobs:
           npm install -g eas-cli
           eas whoami
 
+      - name: Configurar proyecto EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          echo "Configurando proyecto EAS..."
+          if [ ! -f eas.json ]; then
+            echo "Creando configuración EAS..."
+            eas init --id ${{ secrets.EXPO_PROJECT_ID }} --non-interactive || eas build:configure --platform android
+          fi
+
       - name: Generar APK con EAS Build
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
