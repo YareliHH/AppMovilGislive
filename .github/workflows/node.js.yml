@@ -81,11 +81,13 @@ jobs:
       - name: Generar APK con EAS Build
         run: |
           echo "🚀 Iniciando build de APK..."
-          eas build --platform android --profile preview --non-interactive
+          eas build --platform android --profile preview --non-interactive --no-wait
 
       - name: Obtener última build
         id: get-build
         run: |
+          echo "⏳ Esperando 10 segundos para que la build se registre..."
+          sleep 10
           echo "📦 Obteniendo información de la última build..."
           BUILD_INFO=$(eas build:list --platform android --limit 1 --json --non-interactive)
           BUILD_ID=$(echo "$BUILD_INFO" | jq -r '.[0].id')
@@ -94,38 +96,48 @@ jobs:
 
       - name: Esperar a que la build termine
         run: |
-          echo "⏳ Esperando a que la build termine..."
+          echo "⏳ Esperando a que la build termine (máximo 30 minutos)..."
           BUILD_ID="${{ steps.get-build.outputs.build-id }}"
           
           for i in {1..60}; do
-            STATUS=$(eas build:view "$BUILD_ID" --json | jq -r '.status')
+            BUILD_STATUS=$(eas build:view "$BUILD_ID" --json 2>/dev/null || echo '{"status":"pending"}')
+            STATUS=$(echo "$BUILD_STATUS" | jq -r '.status')
             echo "Estado actual: $STATUS (intento $i/60)"
             
             if [ "$STATUS" = "finished" ]; then
               echo "✅ Build completada exitosamente"
-              break
+              exit 0
             elif [ "$STATUS" = "errored" ] || [ "$STATUS" = "canceled" ]; then
               echo "❌ Build falló con estado: $STATUS"
+              echo "Detalles del error:"
+              echo "$BUILD_STATUS" | jq -r '.error // "No hay detalles adicionales"'
               exit 1
             fi
             
             sleep 30
           done
+          
+          echo "⚠️ Timeout: La build tardó más de 30 minutos"
+          exit 1
 
       - name: Descargar APK
         run: |
           echo "📥 Descargando APK..."
           BUILD_ID="${{ steps.get-build.outputs.build-id }}"
-          ARTIFACT_URL=$(eas build:view "$BUILD_ID" --json | jq -r '.artifacts.buildUrl')
           
-          if [ "$ARTIFACT_URL" != "null" ] && [ -n "$ARTIFACT_URL" ]; then
-            echo "URL encontrada: $ARTIFACT_URL"
-            curl -L -o app-release.apk "$ARTIFACT_URL"
-            echo "✅ APK descargado correctamente"
-          else
-            echo "❌ No se encontró URL de descarga"
+          BUILD_DETAILS=$(eas build:view "$BUILD_ID" --json)
+          ARTIFACT_URL=$(echo "$BUILD_DETAILS" | jq -r '.artifacts.buildUrl // empty')
+          
+          if [ -z "$ARTIFACT_URL" ] || [ "$ARTIFACT_URL" = "null" ]; then
+            echo "❌ No se encontró URL de descarga del APK"
+            echo "Detalles de la build:"
+            echo "$BUILD_DETAILS" | jq '.'
             exit 1
           fi
+          
+          echo "📍 URL encontrada: $ARTIFACT_URL"
+          curl -L -o app-release.apk "$ARTIFACT_URL"
+          echo "✅ APK descargado correctamente"
 
       - name: Verificar APK
         run: |
