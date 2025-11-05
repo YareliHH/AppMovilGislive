@@ -101,6 +101,35 @@ jobs:
           echo "Token de Expo configurado correctamente"
           npx eas-cli whoami
 
+      - name: Configurar proyecto EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          echo "Verificando configuración EAS..."
+          if [ ! -f "eas.json" ]; then
+            echo "Creando eas.json..."
+            cat > eas.json << EOF
+          {
+            "build": {
+              "preview": {
+                "android": {
+                  "buildType": "apk",
+                  "gradleCommand": ":app:assembleRelease"
+                }
+              },
+              "production": {
+                "android": {
+                  "buildType": "app-bundle"
+                }
+              }
+            }
+          }
+          EOF
+          fi
+          
+          echo "Inicializando EAS..."
+          npx eas-cli init --id ${{ secrets.EXPO_PROJECT_ID }} --non-interactive || echo "Proyecto ya inicializado"
+
       - name: Generar APK con EAS Build
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
