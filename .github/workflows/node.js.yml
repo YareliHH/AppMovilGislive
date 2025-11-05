@@ -99,19 +99,19 @@ jobs:
             exit 1
           fi
           echo "Token de Expo configurado correctamente"
-          npx eas whoami
+          npx eas-cli whoami
 
       - name: Generar APK con EAS Build
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           echo "Generando APK con EAS Build..."
-          eas build --platform android --profile preview --non-interactive --wait
+          npx eas-cli build --platform android --profile preview --non-interactive --wait
 
       - name: Descargar APK generado
         run: |
           echo "Obteniendo URL del APK..."
-          BUILD_INFO=$(eas build:list --platform=android --limit=1 --json --non-interactive)
+          BUILD_INFO=$(npx eas-cli build:list --platform=android --limit=1 --json --non-interactive)
           BUILD_ID=$(echo $BUILD_INFO | jq -r '.[0].id')
           ARTIFACT_URL=$(echo $BUILD_INFO | jq -r '.[0].artifacts.buildUrl')
           
@@ -123,7 +123,7 @@ jobs:
             curl -L -o app-release.apk "$ARTIFACT_URL"
           else
             echo "No se encontró URL de descarga. Intentando método alternativo..."
-            eas build:view $BUILD_ID --json > build_details.json
+            npx eas-cli build:view $BUILD_ID --json > build_details.json
             ARTIFACT_URL=$(cat build_details.json | jq -r '.artifacts.buildUrl')
             curl -L -o app-release.apk "$ARTIFACT_URL"
           fi
@@ -179,4 +179,4 @@ jobs:
           echo "Publicando en Expo..."
           echo "Canal: production"
           echo "Plataforma: Android"
-          eas update --branch production --message "Deploy desde GitHub Actions - $(date)" --platform android --non-interactive
+          npx eas-cli update --branch production --message "Deploy desde GitHub Actions - $(date)" --platform android --non-interactive
