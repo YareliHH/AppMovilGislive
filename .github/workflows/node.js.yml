@@ -99,7 +99,8 @@ jobs:
             exit 1
           fi
           echo "Token de Expo configurado correctamente"
-          npx eas whoami
+          npm install -g eas-cli
+          eas whoami
 
       - name: Generar APK con EAS Build
         env:
