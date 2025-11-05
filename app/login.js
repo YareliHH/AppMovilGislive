@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   iconButton: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
   },
   button: {
     backgroundColor: "#007AFF",
