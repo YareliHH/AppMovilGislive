@@ -13,7 +13,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test:integration": "jest src/utils/__tests__/apiIntegration.test.js --verbose"
+    "test:integration": "jest src/utils/__tests__/apiIntegracion.test.js --verbose"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
