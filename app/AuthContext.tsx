@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Usuario autenticado en login
       router.replace('/(tabs)');
     }
-  }, [user, segments, isLoading]);
+  }, [user, segments, isLoading, router]);
 
   const loadUser = async () => {
     try {
