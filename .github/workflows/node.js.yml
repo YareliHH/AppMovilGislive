@@ -101,23 +101,33 @@ jobs:
           
           for i in {1..60}; do
             BUILD_STATUS=$(eas build:view "$BUILD_ID" --json 2>/dev/null || echo '{"status":"pending"}')
-            STATUS=$(echo "$BUILD_STATUS" | jq -r '.status')
+            STATUS=$(echo "$BUILD_STATUS" | jq -r '.status // "unknown"')
+            
+            # Convertir a minúsculas para comparación
+            STATUS_LOWER=$(echo "$STATUS" | tr '[:upper:]' '[:lower:]')
+            
             echo "Estado actual: $STATUS (intento $i/60)"
             
-            if [ "$STATUS" = "finished" ]; then
+            # Verificar estados de éxito (case-insensitive)
+            if [ "$STATUS_LOWER" = "finished" ] || [ "$STATUS_LOWER" = "completed" ] || [ "$STATUS_LOWER" = "succeed" ]; then
               echo "✅ Build completada exitosamente"
               exit 0
-            elif [ "$STATUS" = "errored" ] || [ "$STATUS" = "canceled" ]; then
+            elif [ "$STATUS_LOWER" = "errored" ] || [ "$STATUS_LOWER" = "canceled" ] || [ "$STATUS_LOWER" = "failed" ]; then
               echo "❌ Build falló con estado: $STATUS"
               echo "Detalles del error:"
               echo "$BUILD_STATUS" | jq -r '.error // "No hay detalles adicionales"'
               exit 1
             fi
             
-            sleep 30
+            # Si no es el último intento, esperar 30 segundos
+            if [ $i -lt 60 ]; then
+              sleep 30
+            fi
           done
           
+          # Si llegamos aquí, hubo timeout
           echo "⚠️ Timeout: La build tardó más de 30 minutos"
+          echo "Estado final: $STATUS"
           exit 1
 
       - name: Descargar APK
