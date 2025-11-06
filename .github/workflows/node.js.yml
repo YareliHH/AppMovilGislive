@@ -55,7 +55,7 @@ jobs:
         run: npm run test:integration
 
   build-apk:
-    name: Build APK
+    name: Build 
     runs-on: ubuntu-latest
     needs: [build, pruebas-integracion]
     steps:
