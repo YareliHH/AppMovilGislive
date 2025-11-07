@@ -13,7 +13,7 @@ import {
   deleteProducto
 } from '../../api/productos';
 
-// ⭐ Debe ir ANTES del describe
+// ⭐ Mock global de fetch ANTES del describe
 global.fetch = jest.fn();
 
 describe('Integración Frontend-Backend para Productos', () => {
@@ -30,429 +30,570 @@ describe('Integración Frontend-Backend para Productos', () => {
   // ✅ FETCH PRODUCTOS
   // =================================================
   
-  test('Positiva: carga productos correctamente', async () => {
-    const mockProductos = [
-      { 
-        id: 4, 
-        nombre: 'Camiseta Nike', 
-        precio: 599.99, 
-        categoria: 'Ropa',
-        stock: 10,
-        descripcion: 'Camiseta deportiva'
-      },
-      { 
-        id: 2, 
-        nombre: 'Pantalón Adidas', 
-        precio: 899.99, 
-        categoria: 'Ropa',
-        stock: 5,
-        descripcion: 'Pantalón deportivo'
-      }
-    ];
+  describe('fetchProductos', () => {
+    test('Positiva: carga productos correctamente', async () => {
+      const mockProductos = [
+        { 
+          id: 4, 
+          nombre: 'Camiseta Nike', 
+          precio: 599.99, 
+          categoria: 'Ropa',
+          stock: 10,
+          descripcion: 'Camiseta deportiva'
+        },
+        { 
+          id: 2, 
+          nombre: 'Pantalón Adidas', 
+          precio: 899.99, 
+          categoria: 'Ropa',
+          stock: 5,
+          descripcion: 'Pantalón deportivo'
+        }
+      ];
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue(mockProductos),
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockProductos))
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockProductos),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockProductos))
+      });
+
+      const response = await fetchProductos();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://backend-gis-1.onrender.com/api/obtener',
+        expect.objectContaining({
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
+
+      expect(response).toStrictEqual(mockProductos);
+      expect(response).toHaveLength(2);
+      expect(response[0]).toHaveProperty('id');
+      expect(response[0]).toHaveProperty('nombre');
+      expect(response[0]).toHaveProperty('precio');
     });
 
-    const response = await fetchProductos();
+    test('Negativa: maneja error 500 del servidor', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: jest.fn().mockResolvedValue('Error interno del servidor')
+      });
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      'https://backend-gis-1.onrender.com/api/obtener',
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      })
-    );
-
-    // ✅ Validación estricta
-    expect(response).toStrictEqual(mockProductos);
-    expect(response).toHaveLength(2);
-  });
-
-  test('Negativa: maneja error al cargar productos', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      text: jest.fn().mockResolvedValue('Error interno del servidor')
+      await expect(fetchProductos()).rejects.toThrow(
+        'Error al cargar productos: 500 Error interno del servidor'
+      );
+      expect(global.fetch).toHaveBeenCalledTimes(1);
     });
 
-    await expect(fetchProductos()).rejects.toThrow(
-      'Error al cargar productos: 500 Error interno del servidor'
-    );
-  });
+    test('Negativa: maneja error de red', async () => {
+      global.fetch.mockRejectedValueOnce(new Error('Network request failed'));
 
-  test('Negativa: maneja error de red', async () => {
-    global.fetch.mockRejectedValueOnce(new Error('Network request failed'));
-
-    await expect(fetchProductos()).rejects.toThrow('Network request failed');
-  });
-
-  test('Positiva: carga productos vacíos correctamente', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue([]),
-      text: jest.fn().mockResolvedValue('[]')
+      await expect(fetchProductos()).rejects.toThrow('Network request failed');
     });
 
-    const response = await fetchProductos();
+    test('Positiva: retorna array vacío cuando no hay productos', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue([]),
+        text: jest.fn().mockResolvedValue('[]')
+      });
 
-    expect(response).toStrictEqual([]);
-    expect(response).toHaveLength(0);
+      const response = await fetchProductos();
+
+      expect(response).toStrictEqual([]);
+      expect(response).toHaveLength(0);
+      expect(Array.isArray(response)).toBe(true);
+    });
   });
 
   // =================================================
   // ✅ FETCH PRODUCTO POR ID
   // =================================================
 
-  test('Positiva: carga producto por ID correctamente', async () => {
-    const mockProducto = {
-      id: 1,
-      nombre: 'Camiseta adidas',
-      descripcion: 'Camiseta deportiva de alto rendimiento',
-      precio: 599.99,
-      categoria: 'Ropa',
-      color: 'Negro',
-      talla: 'M',
-      genero: 'Masculino',
-      stock: 10
-    };
+  describe('fetchProductoById', () => {
+    test('Positiva: carga producto por ID correctamente', async () => {
+      const mockProducto = {
+        id: 1,
+        nombre: 'Camiseta adidas',
+        descripcion: 'Camiseta deportiva de alto rendimiento',
+        precio: 599.99,
+        categoria: 'Ropa',
+        color: 'Negro',
+        talla: 'M',
+        genero: 'Masculino',
+        stock: 10
+      };
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue(mockProducto),
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockProducto))
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockProducto),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockProducto))
+      });
+
+      const id = 1;
+      const response = await fetchProductoById(id);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `https://backend-gis-1.onrender.com/api/obtener/${id}`,
+        expect.objectContaining({
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
+
+      expect(response).toStrictEqual(mockProducto);
+      expect(response.id).toBe(1);
+      expect(typeof response.precio).toBe('number');
     });
 
-    const id = 1;
-    const response = await fetchProductoById(id);
+    test('Negativa: producto inexistente (404)', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        text: jest.fn().mockResolvedValue('Producto no encontrado')
+      });
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      `https://backend-gis-1.onrender.com/api/obtener/${id}`,
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      })
-    );
-
-    // ✅ Validación estricta
-    expect(response).toStrictEqual(mockProducto);
-  });
-
-  test('Negativa: producto inexistente', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      text: jest.fn().mockResolvedValue('Producto no encontrado')
+      await expect(fetchProductoById(999)).rejects.toThrow(
+        'Error al cargar el producto: 404 Producto no encontrado'
+      );
     });
 
-    await expect(fetchProductoById(999)).rejects.toThrow(
-      'Error al cargar el producto: 404 Producto no encontrado'
-    );
+    test('Negativa: ID inválido', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        text: jest.fn().mockResolvedValue('ID inválido')
+      });
+
+      await expect(fetchProductoById('abc')).rejects.toThrow();
+    });
   });
 
   // =================================================
   // ✅ FETCH IMÁGENES
   // =================================================
 
-  test('Positiva: carga imágenes correctamente', async () => {
-    const mockImagenes = [
-      { id: 1, url: 'https://example.com/img1.jpg', principal: true },
-      { id: 2, url: 'https://example.com/img2.jpg', principal: false }
-    ];
+  describe('fetchImagenesProducto', () => {
+    test('Positiva: carga imágenes correctamente', async () => {
+      const mockImagenes = [
+        { id: 1, url: 'https://example.com/img1.jpg', principal: true },
+        { id: 2, url: 'https://example.com/img2.jpg', principal: false }
+      ];
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue(mockImagenes),
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockImagenes))
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockImagenes),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockImagenes))
+      });
+
+      const response = await fetchImagenesProducto(1);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `https://backend-gis-1.onrender.com/api/imagenes/1`,
+        expect.objectContaining({
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
+
+      expect(response).toStrictEqual(mockImagenes);
+      expect(response[0].principal).toBe(true);
+      expect(response).toHaveLength(2);
     });
 
-    const response = await fetchImagenesProducto(1);
+    test('Negativa: error al cargar imágenes', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        text: jest.fn().mockResolvedValue('Producto no encontrado')
+      });
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      `https://backend-gis-1.onrender.com/api/imagenes/1`,
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      })
-    );
-
-    expect(response).toStrictEqual(mockImagenes);
-    expect(response[0].principal).toBe(true);
-  });
-
-  test('Negativa: error al cargar imágenes', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      text: jest.fn().mockResolvedValue('Producto no encontrado')
+      await expect(fetchImagenesProducto(999)).rejects.toThrow(
+        'Error al cargar imágenes: 404 Producto no encontrado'
+      );
     });
 
-    await expect(fetchImagenesProducto(999)).rejects.toThrow(
-      'Error al cargar imágenes: 404 Producto no encontrado'
-    );
+    test('Positiva: producto sin imágenes retorna array vacío', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue([]),
+        text: jest.fn().mockResolvedValue('[]')
+      });
+
+      const response = await fetchImagenesProducto(5);
+
+      expect(response).toStrictEqual([]);
+      expect(response).toHaveLength(0);
+    });
   });
 
   // =================================================
   // ✅ FETCH CATEGORÍAS
   // =================================================
 
-  test('Positiva: carga categorías correctamente', async () => {
-    const mockCategorias = [
-      { id: 1, nombre: 'Ropa', descripcion: 'Prendas de vestir' },
-      { id: 2, nombre: 'Calzado', descripcion: 'Zapatos y tenis' },
-      { id: 3, nombre: 'Accesorios', descripcion: 'Complementos' }
-    ];
+  describe('fetchCategorias', () => {
+    test('Positiva: carga categorías correctamente', async () => {
+      const mockCategorias = [
+        { id: 1, nombre: 'Ropa', descripcion: 'Prendas de vestir' },
+        { id: 2, nombre: 'Calzado', descripcion: 'Zapatos y tenis' },
+        { id: 3, nombre: 'Accesorios', descripcion: 'Complementos' }
+      ];
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue(mockCategorias),
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockCategorias))
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockCategorias),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockCategorias))
+      });
+
+      const response = await fetchCategorias();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://backend-gis-1.onrender.com/api/obtenercat',
+        expect.objectContaining({
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
+
+      expect(response).toStrictEqual(mockCategorias);
+      expect(response).toHaveLength(3);
     });
 
-    const response = await fetchCategorias();
+    test('Negativa: error al obtener categorías', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: jest.fn().mockResolvedValue('Error del servidor')
+      });
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      'https://backend-gis-1.onrender.com/api/obtenercat',
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      })
-    );
-
-    expect(response).toStrictEqual(mockCategorias);
-    expect(response).toHaveLength(3);
+      await expect(fetchCategorias()).rejects.toThrow();
+    });
   });
 
   // =================================================
   // ✅ FETCH COLORES
   // =================================================
 
-  test('Positiva: carga colores correctamente', async () => {
-    const mockColores = [
-      { id: 1, nombre: 'Rojo', codigo: '#FF0000' },
-      { id: 2, nombre: 'Azul', codigo: '#0000FF' },
-      { id: 3, nombre: 'Negro', codigo: '#000000' }
-    ];
+  describe('fetchColores', () => {
+    test('Positiva: carga colores correctamente', async () => {
+      const mockColores = [
+        { id: 1, nombre: 'Rojo', codigo: '#FF0000' },
+        { id: 2, nombre: 'Azul', codigo: '#0000FF' },
+        { id: 3, nombre: 'Negro', codigo: '#000000' }
+      ];
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue(mockColores),
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockColores))
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockColores),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockColores))
+      });
+
+      const response = await fetchColores();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://backend-gis-1.onrender.com/api/colores',
+        expect.objectContaining({
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
+
+      expect(response).toStrictEqual(mockColores);
+      expect(response.every(color => color.hasOwnProperty('codigo'))).toBe(true);
     });
-
-    const response = await fetchColores();
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      'https://backend-gis-1.onrender.com/api/colores',
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      })
-    );
-
-    expect(response).toStrictEqual(mockColores);
   });
 
   // =================================================
   // ✅ FETCH TALLAS
   // =================================================
 
-  test('Positiva: carga tallas correctamente', async () => {
-    const mockTallas = [
-      { id: 1, nombre: 'XS', descripcion: 'Extra pequeña' },
-      { id: 2, nombre: 'S', descripcion: 'Pequeña' },
-      { id: 3, nombre: 'M', descripcion: 'Mediana' },
-      { id: 4, nombre: 'L', descripcion: 'Grande' },
-      { id: 5, nombre: 'XL', descripcion: 'Extra grande' }
-    ];
+  describe('fetchTallas', () => {
+    test('Positiva: carga tallas correctamente', async () => {
+      const mockTallas = [
+        { id: 1, nombre: 'XS', descripcion: 'Extra pequeña' },
+        { id: 2, nombre: 'S', descripcion: 'Pequeña' },
+        { id: 3, nombre: 'M', descripcion: 'Mediana' },
+        { id: 4, nombre: 'L', descripcion: 'Grande' },
+        { id: 5, nombre: 'XL', descripcion: 'Extra grande' }
+      ];
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue(mockTallas),
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockTallas))
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockTallas),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockTallas))
+      });
+
+      const response = await fetchTallas();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://backend-gis-1.onrender.com/api/tallas',
+        expect.objectContaining({
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
+
+      expect(response).toStrictEqual(mockTallas);
+      expect(response).toHaveLength(5);
     });
-
-    const response = await fetchTallas();
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      'https://backend-gis-1.onrender.com/api/tallas',
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      })
-    );
-
-    expect(response).toStrictEqual(mockTallas);
   });
 
   // =================================================
   // ✅ FETCH GÉNEROS
   // =================================================
 
-  test('Positiva: carga géneros correctamente', async () => {
-    const mockGeneros = [
-      { id: 1, nombre: 'Masculino' },
-      { id: 2, nombre: 'Femenino' },
-      { id: 3, nombre: 'Unisex' }
-    ];
+  describe('fetchGeneros', () => {
+    test('Positiva: carga géneros correctamente', async () => {
+      const mockGeneros = [
+        { id: 1, nombre: 'Masculino' },
+        { id: 2, nombre: 'Femenino' },
+        { id: 3, nombre: 'Unisex' }
+      ];
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue(mockGeneros),
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockGeneros))
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockGeneros),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockGeneros))
+      });
+
+      const response = await fetchGeneros();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://backend-gis-1.onrender.com/api/generos',
+        expect.objectContaining({
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
+
+      expect(response).toStrictEqual(mockGeneros);
+      expect(response).toHaveLength(3);
     });
-
-    const response = await fetchGeneros();
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      'https://backend-gis-1.onrender.com/api/generos',
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      })
-    );
-
-    expect(response).toStrictEqual(mockGeneros);
   });
 
   // =================================================
   // ✅ CREATE PRODUCTO
   // =================================================
 
-  test('Positiva: crea producto correctamente', async () => {
-    const formData = new FormData();
-    formData.append('nombre', 'Camiseta Nueva');
-    formData.append('precio', '699.99');
-    formData.append('categoria_id', '1');
-    formData.append('stock', '15');
-    formData.append('descripcion', 'Nueva camiseta deportiva');
+  describe('createProducto', () => {
+    test('Positiva: crea producto correctamente', async () => {
+      const formData = new FormData();
+      formData.append('nombre', 'Camiseta Nueva');
+      formData.append('precio', '699.99');
+      formData.append('categoria_id', '1');
+      formData.append('stock', '15');
+      formData.append('descripcion', 'Nueva camiseta deportiva');
 
-    const mockResponse = {
-      id: 10,
-      nombre: 'Camiseta Nueva',
-      precio: 699.99,
-      categoria_id: 1,
-      stock: 15,
-      descripcion: 'Nueva camiseta deportiva',
-      mensaje: 'Producto creado exitosamente'
-    };
+      const mockResponse = {
+        id: 10,
+        nombre: 'Camiseta Nueva',
+        precio: 699.99,
+        categoria_id: 1,
+        stock: 15,
+        descripcion: 'Nueva camiseta deportiva',
+        mensaje: 'Producto creado exitosamente'
+      };
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: jest.fn().mockResolvedValue(mockResponse),
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockResponse))
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: jest.fn().mockResolvedValue(mockResponse),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockResponse))
+      });
+
+      const response = await createProducto(formData);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://backend-gis-1.onrender.com/api/agregarproducto',
+        expect.objectContaining({
+          method: 'POST',
+          // ⚠️ NO incluir Content-Type para FormData
+          body: formData
+        })
+      );
+
+      expect(response).toStrictEqual(mockResponse);
+      expect(response.id).toBe(10);
+      expect(response.mensaje).toBe('Producto creado exitosamente');
     });
 
-    const response = await createProducto(formData);
+    test('Negativa: falla al crear producto con datos inválidos', async () => {
+      const formData = new FormData();
+      formData.append('nombre', '');
+      formData.append('precio', '-100');
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      'https://backend-gis-1.onrender.com/api/agregarproducto',
-      expect.objectContaining({
-        method: 'POST',
-        headers: { 'Content-Type': 'multipart/form-data' },
-        body: formData
-      })
-    );
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        text: jest.fn().mockResolvedValue('Datos inválidos')
+      });
 
-    expect(response).toStrictEqual(mockResponse);
+      await expect(createProducto(formData)).rejects.toThrow();
+    });
   });
 
   // =================================================
   // ✅ UPDATE PRODUCTO
   // =================================================
 
-  test('Positiva: actualiza producto correctamente', async () => {
-    const formData = new FormData();
-    formData.append('precio', '799.99');
-    formData.append('stock', '20');
+  describe('updateProducto', () => {
+    test('Positiva: actualiza producto correctamente', async () => {
+      const formData = new FormData();
+      formData.append('precio', '799.99');
+      formData.append('stock', '20');
 
-    const mockResponse = {
-      id: 1,
-      nombre: 'Camiseta Nike',
-      precio: 799.99,
-      stock: 20,
-      mensaje: 'Producto actualizado exitosamente'
-    };
+      const mockResponse = {
+        id: 1,
+        nombre: 'Camiseta Nike',
+        precio: 799.99,
+        stock: 20,
+        mensaje: 'Producto actualizado exitosamente'
+      };
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue(mockResponse),
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockResponse))
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockResponse),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockResponse))
+      });
+
+      const response = await updateProducto(1, formData);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `https://backend-gis-1.onrender.com/api/actualizar/1`,
+        expect.objectContaining({
+          method: 'PUT',
+          // ⚠️ NO incluir Content-Type para FormData
+          body: formData
+        })
+      );
+
+      expect(response).toStrictEqual(mockResponse);
+      expect(response.precio).toBe(799.99);
     });
 
-    const response = await updateProducto(1, formData);
+    test('Negativa: falla al actualizar producto inexistente', async () => {
+      const formData = new FormData();
+      formData.append('precio', '799.99');
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      `https://backend-gis-1.onrender.com/api/actualizar/1`,
-      expect.objectContaining({
-        method: 'PUT',
-        headers: { 'Content-Type': 'multipart/form-data' },
-        body: formData
-      })
-    );
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        text: jest.fn().mockResolvedValue('Producto no encontrado')
+      });
 
-    expect(response).toStrictEqual(mockResponse);
+      await expect(updateProducto(999, formData)).rejects.toThrow();
+    });
   });
 
   // =================================================
   // ✅ DELETE PRODUCTO
   // =================================================
 
-  test('Positiva: elimina producto correctamente', async () => {
-    const mockResponse = {
-      success: true,
-      mensaje: 'Producto eliminado correctamente',
-      id: 1
-    };
+  describe('deleteProducto', () => {
+    test('Positiva: elimina producto correctamente', async () => {
+      const mockResponse = {
+        success: true,
+        mensaje: 'Producto eliminado correctamente',
+        id: 1
+      };
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue(mockResponse),
-      text: jest.fn().mockResolvedValue(JSON.stringify(mockResponse))
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockResponse),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockResponse))
+      });
+
+      const response = await deleteProducto(1);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `https://backend-gis-1.onrender.com/api/eliminar/1`,
+        expect.objectContaining({
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
+
+      expect(response).toStrictEqual(mockResponse);
+      expect(response.success).toBe(true);
     });
 
-    const response = await deleteProducto(1);
+    test('Negativa: falla al eliminar producto inexistente', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        text: jest.fn().mockResolvedValue('Producto no encontrado')
+      });
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      `https://backend-gis-1.onrender.com/api/eliminar/1`,
-      expect.objectContaining({
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
-      })
-    );
+      await expect(deleteProducto(999)).rejects.toThrow();
+    });
 
-    expect(response).toStrictEqual(mockResponse);
+    test('Negativa: falla por restricción de integridad', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        text: jest.fn().mockResolvedValue('No se puede eliminar: producto tiene relaciones')
+      });
+
+      await expect(deleteProducto(1)).rejects.toThrow();
+    });
   });
 
   // =================================================
-  // ✅ TIMEOUT
+  // ✅ PRUEBAS DE TIMEOUT Y RED
   // =================================================
 
-  test('Negativa: timeout', async () => {
-    global.fetch.mockImplementationOnce(
-      () => new Promise(() => {}) // nunca responde
-    );
+  describe('Manejo de timeouts y errores de red', () => {
+    test('Negativa: timeout en petición', async () => {
+      jest.useFakeTimers();
 
-    const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Request timeout')), 5000)
-    );
+      global.fetch.mockImplementationOnce(
+        () => new Promise(() => {}) // Nunca se resuelve
+      );
 
-    await expect(Promise.race([fetchProductos(), timeout]))
-      .rejects
-      .toThrow('Request timeout');
+      const fetchPromise = fetchProductos();
+      
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 5000);
+      });
+
+      jest.advanceTimersByTime(5000);
+
+      await expect(Promise.race([fetchPromise, timeoutPromise]))
+        .rejects
+        .toThrow('Request timeout');
+
+      jest.useRealTimers();
+    });
+
+    test('Negativa: error de conexión rechazada', async () => {
+      global.fetch.mockRejectedValueOnce(new Error('ECONNREFUSED'));
+
+      await expect(fetchProductos()).rejects.toThrow('ECONNREFUSED');
+    });
+
+    test('Negativa: respuesta sin JSON válido', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
+        text: jest.fn().mockResolvedValue('Not a JSON')
+      });
+
+      await expect(fetchProductos()).rejects.toThrow();
+    });
   });
 
 });
