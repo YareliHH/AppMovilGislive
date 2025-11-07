@@ -546,7 +546,7 @@ describe('pruebas unitarias de Productos', () => {
     test('Positiva: elimina caracteres especiales', () => {
       const resultado = generarSlug('Producto #1 - Nueva versión!');
 
-      expect(resultado).toBe('producto-1--nueva-version');
+      expect(resultado).toBe('producto-1-nueva-version');
     });
 
     test('Negativa: retorna string vacío si nombre es inválido', () => {
