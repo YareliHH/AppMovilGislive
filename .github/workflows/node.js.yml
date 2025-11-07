@@ -55,7 +55,7 @@ jobs:
         run: npm run test:integration
 
   build-apk:
-    name: Build 
+    name: Build APK (Local)
     runs-on: ubuntu-latest
     needs: [build, pruebas-integracion]
     steps:
@@ -71,6 +71,19 @@ jobs:
       - name: Instalar dependencias
         run: npm ci --legacy-peer-deps
 
+      - name: Configurar Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar Android SDK Components
+        run: |
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
       - name: Configurar Expo y EAS
         uses: expo/expo-github-action@v8
         with:
@@ -78,76 +91,27 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Generar APK con EAS Build
+      - name: Generar APK con Build Local
         run: |
-          echo "🚀 Iniciando build de APK..."
-          eas build --platform android --profile preview --non-interactive --no-wait
+          echo "🚀 Iniciando build local de APK..."
+          eas build --platform android --profile preview-local --local --non-interactive
 
-      - name: Obtener última build
-        id: get-build
+      - name: Encontrar y renombrar APK
         run: |
-          echo "⏳ Esperando 10 segundos para que la build se registre..."
-          sleep 10
-          echo "📦 Obteniendo información de la última build..."
-          BUILD_INFO=$(eas build:list --platform android --limit 1 --json --non-interactive)
-          BUILD_ID=$(echo "$BUILD_INFO" | jq -r '.[0].id')
-          echo "build-id=$BUILD_ID" >> $GITHUB_OUTPUT
-          echo "✅ Build ID: $BUILD_ID"
-
-      - name: Esperar a que la build termine
-        run: |
-          echo "⏳ Esperando a que la build termine (máximo 30 minutos)..."
-          BUILD_ID="${{ steps.get-build.outputs.build-id }}"
+          echo "🔍 Buscando APK generado..."
+          APK_PATH=$(find . -name "*.apk" -type f | head -n 1)
           
-          for i in {1..60}; do
-            BUILD_STATUS=$(eas build:view "$BUILD_ID" --json 2>/dev/null || echo '{"status":"pending"}')
-            STATUS=$(echo "$BUILD_STATUS" | jq -r '.status // "unknown"')
-            
-            # Convertir a minúsculas para comparación
-            STATUS_LOWER=$(echo "$STATUS" | tr '[:upper:]' '[:lower:]')
-            
-            echo "Estado actual: $STATUS (intento $i/60)"
-            
-            # Verificar estados de éxito (case-insensitive)
-            if [ "$STATUS_LOWER" = "finished" ] || [ "$STATUS_LOWER" = "completed" ] || [ "$STATUS_LOWER" = "succeed" ]; then
-              echo "✅ Build completada exitosamente"
-              exit 0
-            elif [ "$STATUS_LOWER" = "errored" ] || [ "$STATUS_LOWER" = "canceled" ] || [ "$STATUS_LOWER" = "failed" ]; then
-              echo "❌ Build falló con estado: $STATUS"
-              echo "Detalles del error:"
-              echo "$BUILD_STATUS" | jq -r '.error // "No hay detalles adicionales"'
-              exit 1
-            fi
-            
-            # Si no es el último intento, esperar 30 segundos
-            if [ $i -lt 60 ]; then
-              sleep 30
-            fi
-          done
-          
-          # Si llegamos aquí, hubo timeout
-          echo "⚠️ Timeout: La build tardó más de 30 minutos"
-          echo "Estado final: $STATUS"
-          exit 1
-
-      - name: Descargar APK
-        run: |
-          echo "📥 Descargando APK..."
-          BUILD_ID="${{ steps.get-build.outputs.build-id }}"
-          
-          BUILD_DETAILS=$(eas build:view "$BUILD_ID" --json)
-          ARTIFACT_URL=$(echo "$BUILD_DETAILS" | jq -r '.artifacts.buildUrl // empty')
-          
-          if [ -z "$ARTIFACT_URL" ] || [ "$ARTIFACT_URL" = "null" ]; then
-            echo "❌ No se encontró URL de descarga del APK"
-            echo "Detalles de la build:"
-            echo "$BUILD_DETAILS" | jq '.'
+          if [ -z "$APK_PATH" ]; then
+            echo "❌ No se encontró el APK"
             exit 1
           fi
           
-          echo "📍 URL encontrada: $ARTIFACT_URL"
-          curl -L -o app-release.apk "$ARTIFACT_URL"
-          echo "✅ APK descargado correctamente"
+          echo "📦 APK encontrado: $APK_PATH"
+          cp "$APK_PATH" app-release.apk
+          
+          SIZE=$(ls -lh app-release.apk | awk '{print $5}')
+          echo "✅ APK copiado exitosamente"
+          echo "📊 Tamaño: $SIZE"
 
       - name: Verificar APK
         run: |
