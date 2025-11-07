@@ -110,7 +110,7 @@ describe('Integración Frontend-Backend para Productos', () => {
   test('Positiva: carga producto por ID correctamente', async () => {
     const mockProducto = {
       id: 1,
-      nombre: 'Camiseta Nike',
+      nombre: 'Camiseta adidaddd',
       descripcion: 'Camiseta deportiva de alto rendimiento',
       precio: 599.99,
       categoria: 'Ropa',
