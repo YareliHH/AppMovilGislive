@@ -84,6 +84,54 @@ jobs:
         run: |
           sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
+      - name: Generar keystore para build local
+        run: |
+          echo "🔑 Generando credenciales locales..."
+          keytool -genkeypair -v -storetype PKCS12 \
+            -keystore android-keystore.jks \
+            -storepass android \
+            -alias android \
+            -keypass android \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=GisLive, OU=Mobile, O=GisLive, L=City, ST=State, C=MX"
+          echo "✅ Keystore generado"
+
+      - name: Crear credentials.json
+        run: |
+          echo "📝 Creando credentials.json..."
+          cat > credentials.json << 'EOF'
+          {
+            "android": {
+              "keystore": {
+                "keystorePath": "android-keystore.jks",
+                "keystorePassword": "android",
+                "keyAlias": "android",
+                "keyPassword": "android"
+              }
+            }
+          }
+          EOF
+          echo "✅ credentials.json creado"
+          
+          # Verificar que los archivos existen
+          if [ -f "credentials.json" ]; then
+            echo "✅ credentials.json existe"
+            cat credentials.json
+          else
+            echo "❌ credentials.json NO existe"
+            exit 1
+          fi
+          
+          if [ -f "android-keystore.jks" ]; then
+            echo "✅ android-keystore.jks existe"
+            ls -lh android-keystore.jks
+          else
+            echo "❌ android-keystore.jks NO existe"
+            exit 1
+          fi
+
       - name: Configurar Expo y EAS
         uses: expo/expo-github-action@v8
         with:
@@ -91,7 +139,7 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Generar APK con Build 
+      - name: Generar APK con Build Local
         run: |
           echo "🚀 Iniciando build local de APK..."
           eas build --platform android --profile preview-local --local --non-interactive
