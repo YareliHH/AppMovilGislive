@@ -6,19 +6,31 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "20.x",
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=4096"
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk",
         "credentialsSource": "remote"
+      },
+      "node": "20.x",
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=4096"
       }
     },
     "production": {
       "android": {
         "buildType": "app-bundle",
         "credentialsSource": "remote"
+      },
+      "node": "20.x",
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=4096"
       }
     }
   },
