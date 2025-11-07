@@ -25,7 +25,7 @@ describe('Utils Functions', () => {
 
   describe('validateEmail', () => {
     test('debería validar emails correctos', () => {
-      expect(validateEmail('test@example.com')).toBe(true);
+      expect(validateEmail('test@example.commm')).toBe(true);
       expect(validateEmail('user.name@domain.co')).toBe(true);
       expect(validateEmail('name+tag@example.com')).toBe(true);
     });
