@@ -55,7 +55,7 @@ jobs:
         run: npm run test:integration
 
   build-apk:
-    name: Build APK (Local)
+    name: Build APK 
     runs-on: ubuntu-latest
     needs: [build, pruebas-integracion]
     steps:
@@ -84,7 +84,7 @@ jobs:
         run: |
           sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Generar keystore para build local
+      - name: Generar keystore para build 
         run: |
           echo "🔑 Generando credenciales locales..."
           keytool -genkeypair -v -storetype PKCS12 \
@@ -139,7 +139,7 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Generar APK con Build Local
+      - name: Generar APK con Build 
         run: |
           echo "🚀 Iniciando build local de APK..."
           eas build --platform android --profile preview-local --local --non-interactive
