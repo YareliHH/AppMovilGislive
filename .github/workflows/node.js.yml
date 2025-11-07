@@ -163,7 +163,7 @@ jobs:
       - name: Subir APK como artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: RehabSoft-Android
+          name: gislive-Android
           path: app-release.apk
           retention-days: 30
 
