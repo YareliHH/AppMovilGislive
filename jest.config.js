@@ -14,5 +14,8 @@ module.exports = {
     '!src/**/__tests__/**'
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  testEnvironment: 'node'
+  testEnvironment: 'node',
+  globals: {
+    'use strict': true
+  }
 };
