@@ -1081,7 +1081,7 @@ const ProductoFormMejorado = () => {
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.primary} />
       
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Gestión de Productos</Text>
+        <Text style={styles.headerTitle}>Gestión de Productoos</Text>
         <TouchableOpacity 
           accessible={true}
           accessibilityLabel="Agregar nuevo producto"
