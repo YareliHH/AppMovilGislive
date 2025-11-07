@@ -91,7 +91,7 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Generar APK con Build Local
+      - name: Generar APK con Build 
         run: |
           echo "🚀 Iniciando build local de APK..."
           eas build --platform android --profile preview-local --local --non-interactive
