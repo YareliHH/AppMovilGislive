@@ -1,32 +1,36 @@
 {
   "cli": {
-    "version": ">= 5.2.0"
+    "version": ">= 7.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "android": {
-        "gradleCommand": ":app:assembleDebug"
+      "node": "20.18.0",
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=4096"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease"
+        "credentialsSource": "remote"
       },
+      "node": "20.18.0",
       "env": {
-        "NODE_ENV": "production"
+        "NODE_OPTIONS": "--max-old-space-size=4096"
       }
     },
     "production": {
-      "distribution": "store",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "credentialsSource": "remote"
       },
+      "node": "20.18.0",
       "env": {
-        "NODE_ENV": "production"
+        "NODE_OPTIONS": "--max-old-space-size=4096"
       }
     }
   },
