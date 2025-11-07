@@ -34,7 +34,7 @@ describe('Integración Frontend-Backend para Productos', () => {
   test('Positiva: carga productos correctamente', async () => {
     const mockProductos = [
       { 
-        id: 1, 
+        id: 2, 
         nombre: 'Camiseta Nike', 
         precio: 599.99, 
         categoria: 'Ropa',
