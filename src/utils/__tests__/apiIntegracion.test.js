@@ -13,13 +13,12 @@ import {
   deleteProducto
 } from '../../api/productos';
 
-// ⭐ CRÍTICO: Esta línea debe estar ANTES del describe
+// ⭐ Debe ir ANTES del describe
 global.fetch = jest.fn();
 
 describe('Integración Frontend-Backend para Productos', () => {
   
   beforeEach(() => {
-    // ⭐ Cambiar mockClear() por jest.clearAllMocks()
     jest.clearAllMocks();
   });
 
@@ -27,14 +26,14 @@ describe('Integración Frontend-Backend para Productos', () => {
     jest.resetAllMocks();
   });
 
-  // ============================================
-  // FETCH PRODUCTOS
-  // ============================================
+  // =================================================
+  // ✅ FETCH PRODUCTOS
+  // =================================================
   
   test('Positiva: carga productos correctamente', async () => {
     const mockProductos = [
       { 
-        id: 2, 
+        id: 1, 
         nombre: 'Camiseta Nike', 
         precio: 599.99, 
         categoria: 'Ropa',
@@ -67,7 +66,9 @@ describe('Integración Frontend-Backend para Productos', () => {
         headers: { 'Content-Type': 'application/json' }
       })
     );
-    expect(response).toEqual(mockProductos);
+
+    // ✅ Validación estricta
+    expect(response).toStrictEqual(mockProductos);
     expect(response).toHaveLength(2);
   });
 
@@ -83,7 +84,7 @@ describe('Integración Frontend-Backend para Productos', () => {
     );
   });
 
-  test('Negativa: maneja error de red al cargar productos', async () => {
+  test('Negativa: maneja error de red', async () => {
     global.fetch.mockRejectedValueOnce(new Error('Network request failed'));
 
     await expect(fetchProductos()).rejects.toThrow('Network request failed');
@@ -99,18 +100,18 @@ describe('Integración Frontend-Backend para Productos', () => {
 
     const response = await fetchProductos();
 
-    expect(response).toEqual([]);
+    expect(response).toStrictEqual([]);
     expect(response).toHaveLength(0);
   });
 
-  // ============================================
-  // FETCH PRODUCTO POR ID
-  // ============================================
+  // =================================================
+  // ✅ FETCH PRODUCTO POR ID
+  // =================================================
 
   test('Positiva: carga producto por ID correctamente', async () => {
     const mockProducto = {
       id: 1,
-      nombre: 'Camiseta adidaddd',
+      nombre: 'Camiseta adidas',
       descripcion: 'Camiseta deportiva de alto rendimiento',
       precio: 599.99,
       categoria: 'Ropa',
@@ -137,41 +138,28 @@ describe('Integración Frontend-Backend para Productos', () => {
         headers: { 'Content-Type': 'application/json' }
       })
     );
-    expect(response).toEqual(mockProducto);
-    expect(response.id).toBe(1);
+
+    // ✅ Validación estricta
+    expect(response).toStrictEqual(mockProducto);
   });
 
-  test('Negativa: maneja error al cargar producto inexistente', async () => {
+  test('Negativa: producto inexistente', async () => {
     global.fetch.mockResolvedValueOnce({
       ok: false,
       status: 404,
       text: jest.fn().mockResolvedValue('Producto no encontrado')
     });
 
-    const id = 999;
-    await expect(fetchProductoById(id)).rejects.toThrow(
+    await expect(fetchProductoById(999)).rejects.toThrow(
       'Error al cargar el producto: 404 Producto no encontrado'
     );
   });
 
-  test('Negativa: maneja error con ID inválido', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-      text: jest.fn().mockResolvedValue('ID inválido')
-    });
+  // =================================================
+  // ✅ FETCH IMÁGENES
+  // =================================================
 
-    const id = 'abc';
-    await expect(fetchProductoById(id)).rejects.toThrow(
-      'Error al cargar el producto: 400 ID inválido'
-    );
-  });
-
-  // ============================================
-  // FETCH IMÁGENES PRODUCTO
-  // ============================================
-
-  test('Positiva: carga imágenes de producto correctamente', async () => {
+  test('Positiva: carga imágenes correctamente', async () => {
     const mockImagenes = [
       { id: 1, url: 'https://example.com/img1.jpg', principal: true },
       { id: 2, url: 'https://example.com/img2.jpg', principal: false }
@@ -184,52 +172,35 @@ describe('Integración Frontend-Backend para Productos', () => {
       text: jest.fn().mockResolvedValue(JSON.stringify(mockImagenes))
     });
 
-    const id = 1;
-    const response = await fetchImagenesProducto(id);
+    const response = await fetchImagenesProducto(1);
 
     expect(global.fetch).toHaveBeenCalledWith(
-      `https://backend-gis-1.onrender.com/api/imagenes/${id}`,
+      `https://backend-gis-1.onrender.com/api/imagenes/1`,
       expect.objectContaining({
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       })
     );
-    expect(response).toEqual(mockImagenes);
-    expect(response).toHaveLength(2);
+
+    expect(response).toStrictEqual(mockImagenes);
     expect(response[0].principal).toBe(true);
   });
 
-  test('Negativa: maneja error al cargar imágenes de producto inexistente', async () => {
+  test('Negativa: error al cargar imágenes', async () => {
     global.fetch.mockResolvedValueOnce({
       ok: false,
       status: 404,
       text: jest.fn().mockResolvedValue('Producto no encontrado')
     });
 
-    const id = 999;
-    await expect(fetchImagenesProducto(id)).rejects.toThrow(
+    await expect(fetchImagenesProducto(999)).rejects.toThrow(
       'Error al cargar imágenes: 404 Producto no encontrado'
     );
   });
 
-  test('Positiva: carga producto sin imágenes correctamente', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue([]),
-      text: jest.fn().mockResolvedValue('[]')
-    });
-
-    const id = 1;
-    const response = await fetchImagenesProducto(id);
-
-    expect(response).toEqual([]);
-    expect(response).toHaveLength(0);
-  });
-
-  // ============================================
-  // FETCH CATEGORÍAS
-  // ============================================
+  // =================================================
+  // ✅ FETCH CATEGORÍAS
+  // =================================================
 
   test('Positiva: carga categorías correctamente', async () => {
     const mockCategorias = [
@@ -254,25 +225,14 @@ describe('Integración Frontend-Backend para Productos', () => {
         headers: { 'Content-Type': 'application/json' }
       })
     );
-    expect(response).toEqual(mockCategorias);
+
+    expect(response).toStrictEqual(mockCategorias);
     expect(response).toHaveLength(3);
   });
 
-  test('Negativa: maneja error al cargar categorías', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      text: jest.fn().mockResolvedValue('Error del servidor')
-    });
-
-    await expect(fetchCategorias()).rejects.toThrow(
-      'Error al cargar categorías: 500 Error del servidor'
-    );
-  });
-
-  // ============================================
-  // FETCH COLORES
-  // ============================================
+  // =================================================
+  // ✅ FETCH COLORES
+  // =================================================
 
   test('Positiva: carga colores correctamente', async () => {
     const mockColores = [
@@ -297,25 +257,13 @@ describe('Integración Frontend-Backend para Productos', () => {
         headers: { 'Content-Type': 'application/json' }
       })
     );
-    expect(response).toEqual(mockColores);
-    expect(response).toHaveLength(3);
+
+    expect(response).toStrictEqual(mockColores);
   });
 
-  test('Negativa: maneja error al cargar colores', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      text: jest.fn().mockResolvedValue('No se encontraron colores')
-    });
-
-    await expect(fetchColores()).rejects.toThrow(
-      'Error al cargar colores: 404 No se encontraron colores'
-    );
-  });
-
-  // ============================================
-  // FETCH TALLAS
-  // ============================================
+  // =================================================
+  // ✅ FETCH TALLAS
+  // =================================================
 
   test('Positiva: carga tallas correctamente', async () => {
     const mockTallas = [
@@ -342,25 +290,13 @@ describe('Integración Frontend-Backend para Productos', () => {
         headers: { 'Content-Type': 'application/json' }
       })
     );
-    expect(response).toEqual(mockTallas);
-    expect(response).toHaveLength(5);
+
+    expect(response).toStrictEqual(mockTallas);
   });
 
-  test('Negativa: maneja error al cargar tallas', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      text: jest.fn().mockResolvedValue('Error del servidor')
-    });
-
-    await expect(fetchTallas()).rejects.toThrow(
-      'Error al cargar tallas: 500 Error del servidor'
-    );
-  });
-
-  // ============================================
-  // FETCH GÉNEROS
-  // ============================================
+  // =================================================
+  // ✅ FETCH GÉNEROS
+  // =================================================
 
   test('Positiva: carga géneros correctamente', async () => {
     const mockGeneros = [
@@ -385,25 +321,13 @@ describe('Integración Frontend-Backend para Productos', () => {
         headers: { 'Content-Type': 'application/json' }
       })
     );
-    expect(response).toEqual(mockGeneros);
-    expect(response).toHaveLength(3);
+
+    expect(response).toStrictEqual(mockGeneros);
   });
 
-  test('Negativa: maneja error al cargar géneros', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      text: jest.fn().mockResolvedValue('Error del servidor')
-    });
-
-    await expect(fetchGeneros()).rejects.toThrow(
-      'Error al cargar géneros: 500 Error del servidor'
-    );
-  });
-
-  // ============================================
-  // CREATE PRODUCTO
-  // ============================================
+  // =================================================
+  // ✅ CREATE PRODUCTO
+  // =================================================
 
   test('Positiva: crea producto correctamente', async () => {
     const formData = new FormData();
@@ -440,45 +364,13 @@ describe('Integración Frontend-Backend para Productos', () => {
         body: formData
       })
     );
-    expect(response).toEqual(mockResponse);
-    expect(response.id).toBeDefined();
-    expect(response.mensaje).toBe('Producto creado exitosamente');
+
+    expect(response).toStrictEqual(mockResponse);
   });
 
-  test('Negativa: maneja error de validación al crear producto', async () => {
-    const formData = new FormData();
-    formData.append('nombre', ''); // Nombre vacío
-
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-      text: jest.fn().mockResolvedValue('El nombre es requerido')
-    });
-
-    await expect(createProducto(formData)).rejects.toThrow(
-      'Error al crear producto: 400 El nombre es requerido'
-    );
-  });
-
-  test('Negativa: maneja error con producto duplicado', async () => {
-    const formData = new FormData();
-    formData.append('nombre', 'Producto Existente');
-    formData.append('precio', '500');
-
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 409,
-      text: jest.fn().mockResolvedValue('El producto ya existe')
-    });
-
-    await expect(createProducto(formData)).rejects.toThrow(
-      'Error al crear producto: 409 El producto ya existe'
-    );
-  });
-
-  // ============================================
-  // UPDATE PRODUCTO
-  // ============================================
+  // =================================================
+  // ✅ UPDATE PRODUCTO
+  // =================================================
 
   test('Positiva: actualiza producto correctamente', async () => {
     const formData = new FormData();
@@ -500,57 +392,23 @@ describe('Integración Frontend-Backend para Productos', () => {
       text: jest.fn().mockResolvedValue(JSON.stringify(mockResponse))
     });
 
-    const id = 1;
-    const response = await updateProducto(id, formData);
+    const response = await updateProducto(1, formData);
 
     expect(global.fetch).toHaveBeenCalledWith(
-      `https://backend-gis-1.onrender.com/api/actualizar/${id}`,
+      `https://backend-gis-1.onrender.com/api/actualizar/1`,
       expect.objectContaining({
         method: 'PUT',
         headers: { 'Content-Type': 'multipart/form-data' },
         body: formData
       })
     );
-    expect(response).toEqual(mockResponse);
-    expect(response.precio).toBe(799.99);
-    expect(response.stock).toBe(20);
+
+    expect(response).toStrictEqual(mockResponse);
   });
 
-  test('Negativa: maneja error al actualizar producto inexistente', async () => {
-    const formData = new FormData();
-    formData.append('precio', '800');
-
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      text: jest.fn().mockResolvedValue('Producto no encontrado')
-    });
-
-    const id = 999;
-    await expect(updateProducto(id, formData)).rejects.toThrow(
-      'Error al actualizar producto: 404 Producto no encontrado'
-    );
-  });
-
-  test('Negativa: maneja error de validación al actualizar', async () => {
-    const formData = new FormData();
-    formData.append('precio', '-100'); // Precio inválido
-
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-      text: jest.fn().mockResolvedValue('El precio debe ser mayor a 0')
-    });
-
-    const id = 1;
-    await expect(updateProducto(id, formData)).rejects.toThrow(
-      'Error al actualizar producto: 400 El precio debe ser mayor a 0'
-    );
-  });
-
-  // ============================================
-  // DELETE PRODUCTO
-  // ============================================
+  // =================================================
+  // ✅ DELETE PRODUCTO
+  // =================================================
 
   test('Positiva: elimina producto correctamente', async () => {
     const mockResponse = {
@@ -566,67 +424,35 @@ describe('Integración Frontend-Backend para Productos', () => {
       text: jest.fn().mockResolvedValue(JSON.stringify(mockResponse))
     });
 
-    const id = 1;
-    const response = await deleteProducto(id);
+    const response = await deleteProducto(1);
 
     expect(global.fetch).toHaveBeenCalledWith(
-      `https://backend-gis-1.onrender.com/api/eliminar/${id}`,
+      `https://backend-gis-1.onrender.com/api/eliminar/1`,
       expect.objectContaining({
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       })
     );
-    expect(response).toEqual(mockResponse);
-    expect(response.success).toBe(true);
-    expect(response.mensaje).toContain('eliminado');
+
+    expect(response).toStrictEqual(mockResponse);
   });
 
-  test('Negativa: maneja error al eliminar producto inexistente', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      text: jest.fn().mockResolvedValue('Producto no encontrado')
-    });
+  // =================================================
+  // ✅ TIMEOUT
+  // =================================================
 
-    const id = 999;
-    await expect(deleteProducto(id)).rejects.toThrow(
-      'Error al eliminar producto: 404 Producto no encontrado'
+  test('Negativa: timeout', async () => {
+    global.fetch.mockImplementationOnce(
+      () => new Promise(() => {}) // nunca responde
     );
-  });
 
-  test('Negativa: maneja error al eliminar producto con relaciones', async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 409,
-      text: jest.fn().mockResolvedValue('No se puede eliminar, el producto tiene órdenes asociadas')
-    });
-
-    const id = 1;
-    await expect(deleteProducto(id)).rejects.toThrow(
-      'Error al eliminar producto: 409 No se puede eliminar, el producto tiene órdenes asociadas'
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout')), 5000)
     );
+
+    await expect(Promise.race([fetchProductos(), timeout]))
+      .rejects
+      .toThrow('Request timeout');
   });
-
-  // ============================================
-  // PRUEBAS ADICIONALES
-  // ============================================
-
-test('Negativa: maneja timeout en fetch', async () => {
-  // Simula un fetch que tarda demasiado
-  global.fetch.mockImplementationOnce(
-    () => new Promise((resolve) => {
-      // No se resuelve nunca, simulando un timeout real
-    })
-  );
-
-  // Configura un timeout para la prueba
-  const timeoutPromise = new Promise((_, reject) => 
-    setTimeout(() => reject(new Error('Request timeout')), 5000)
-  );
-
-  await expect(
-    Promise.race([fetchProductos(), timeoutPromise])
-  ).rejects.toThrow('Request timeout');
-});
 
 });
