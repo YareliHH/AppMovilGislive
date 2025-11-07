@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
+    "build": "npm run type-check && npm run lint && expo build",
+    "prebuild": "npm run type-check && npm run lint",
+  "type-check": "tsc --noEmit",
+  "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "test:coverage": "jest --coverage",
     "test": "jest --passWithNoTests",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
@@ -12,7 +16,6 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint",
     "test:integration": "jest src/utils/__tests__/apiIntegracion.test.js --verbose"
   },
   "dependencies": {
