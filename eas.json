@@ -15,13 +15,6 @@
         "credentialsSource": "remote"
       }
     },
-    "preview-local": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk",
-        "credentialsSource": "local"
-      }
-    },
     "production": {
       "android": {
         "buildType": "app-bundle",
