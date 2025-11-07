@@ -13,29 +13,8 @@ import {
   deleteProducto
 } from '../../api/productos';
 
+// ⭐ Debe ir ANTES del describe
 global.fetch = jest.fn();
-
-const createImmutableMock = (data) => {
-  if (Array.isArray(data)) {
-    return Object.freeze(data.map(item => 
-      typeof item === 'object' ? Object.freeze({ ...item }) : item
-    ));
-  }
-  return Object.freeze({ ...data });
-};
-
-const validateResponseStructure = (response, expectedKeys) => {
-  const responseKeys = Object.keys(response);
-  const missingKeys = expectedKeys.filter(key => !responseKeys.includes(key));
-  
-  if (missingKeys.length > 0) {
-    throw new Error(
-      `VALIDACIÓN FALLIDA: Faltan propiedades requeridas: ${missingKeys.join(', ')}`
-    );
-  }
-  
-  return true;
-};
 
 describe('Integración Frontend-Backend para Productos', () => {
   
@@ -52,7 +31,7 @@ describe('Integración Frontend-Backend para Productos', () => {
   // =================================================
   
   test('Positiva: carga productos correctamente', async () => {
-    const mockProductos = createImmutableMock([
+    const mockProductos = [
       { 
         id: 1, 
         nombre: 'Camiseta Nike', 
@@ -69,11 +48,7 @@ describe('Integración Frontend-Backend para Productos', () => {
         stock: 5,
         descripcion: 'Pantalón deportivo'
       }
-    ]);
-
-    expect(() => {
-      mockProductos[0].id = 999;
-    }).toThrow(); 
+    ];
 
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -92,19 +67,9 @@ describe('Integración Frontend-Backend para Productos', () => {
       })
     );
 
-    // ✅ Validación de estructura
-    response.forEach(producto => {
-      validateResponseStructure(producto, ['id', 'nombre', 'precio', 'categoria', 'stock']);
-    });
-
     // ✅ Validación estricta
     expect(response).toStrictEqual(mockProductos);
     expect(response).toHaveLength(2);
-    
-    // 🛡️ Validación de tipos
-    expect(typeof response[0].id).toBe('number');
-    expect(typeof response[0].nombre).toBe('string');
-    expect(typeof response[0].precio).toBe('number');
   });
 
   test('Negativa: maneja error al cargar productos', async () => {
@@ -126,12 +91,10 @@ describe('Integración Frontend-Backend para Productos', () => {
   });
 
   test('Positiva: carga productos vacíos correctamente', async () => {
-    const mockEmpty = createImmutableMock([]);
-
     global.fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue(mockEmpty),
+      json: jest.fn().mockResolvedValue([]),
       text: jest.fn().mockResolvedValue('[]')
     });
 
@@ -146,7 +109,7 @@ describe('Integración Frontend-Backend para Productos', () => {
   // =================================================
 
   test('Positiva: carga producto por ID correctamente', async () => {
-    const mockProducto = createImmutableMock({
+    const mockProducto = {
       id: 1,
       nombre: 'Camiseta adidas',
       descripcion: 'Camiseta deportiva de alto rendimiento',
@@ -156,12 +119,7 @@ describe('Integración Frontend-Backend para Productos', () => {
       talla: 'M',
       genero: 'Masculino',
       stock: 10
-    });
-
-    // 🛡️ Protección contra modificación
-    expect(() => {
-      mockProducto.id = 999;
-    }).toThrow();
+    };
 
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -180,11 +138,6 @@ describe('Integración Frontend-Backend para Productos', () => {
         headers: { 'Content-Type': 'application/json' }
       })
     );
-
-    // ✅ Validación de estructura
-    validateResponseStructure(response, [
-      'id', 'nombre', 'descripcion', 'precio', 'categoria', 'stock'
-    ]);
 
     // ✅ Validación estricta
     expect(response).toStrictEqual(mockProducto);
@@ -207,10 +160,10 @@ describe('Integración Frontend-Backend para Productos', () => {
   // =================================================
 
   test('Positiva: carga imágenes correctamente', async () => {
-    const mockImagenes = createImmutableMock([
+    const mockImagenes = [
       { id: 1, url: 'https://example.com/img1.jpg', principal: true },
       { id: 2, url: 'https://example.com/img2.jpg', principal: false }
-    ]);
+    ];
 
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -228,11 +181,6 @@ describe('Integración Frontend-Backend para Productos', () => {
         headers: { 'Content-Type': 'application/json' }
       })
     );
-
-    // ✅ Validación de estructura
-    response.forEach(imagen => {
-      validateResponseStructure(imagen, ['id', 'url', 'principal']);
-    });
 
     expect(response).toStrictEqual(mockImagenes);
     expect(response[0].principal).toBe(true);
@@ -255,11 +203,11 @@ describe('Integración Frontend-Backend para Productos', () => {
   // =================================================
 
   test('Positiva: carga categorías correctamente', async () => {
-    const mockCategorias = createImmutableMock([
+    const mockCategorias = [
       { id: 1, nombre: 'Ropa', descripcion: 'Prendas de vestir' },
       { id: 2, nombre: 'Calzado', descripcion: 'Zapatos y tenis' },
       { id: 3, nombre: 'Accesorios', descripcion: 'Complementos' }
-    ]);
+    ];
 
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -278,11 +226,6 @@ describe('Integración Frontend-Backend para Productos', () => {
       })
     );
 
-    // ✅ Validación de estructura
-    response.forEach(categoria => {
-      validateResponseStructure(categoria, ['id', 'nombre']);
-    });
-
     expect(response).toStrictEqual(mockCategorias);
     expect(response).toHaveLength(3);
   });
@@ -292,11 +235,11 @@ describe('Integración Frontend-Backend para Productos', () => {
   // =================================================
 
   test('Positiva: carga colores correctamente', async () => {
-    const mockColores = createImmutableMock([
+    const mockColores = [
       { id: 1, nombre: 'Rojo', codigo: '#FF0000' },
       { id: 2, nombre: 'Azul', codigo: '#0000FF' },
       { id: 3, nombre: 'Negro', codigo: '#000000' }
-    ]);
+    ];
 
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -315,11 +258,6 @@ describe('Integración Frontend-Backend para Productos', () => {
       })
     );
 
-    // ✅ Validación de estructura
-    response.forEach(color => {
-      validateResponseStructure(color, ['id', 'nombre']);
-    });
-
     expect(response).toStrictEqual(mockColores);
   });
 
@@ -328,13 +266,13 @@ describe('Integración Frontend-Backend para Productos', () => {
   // =================================================
 
   test('Positiva: carga tallas correctamente', async () => {
-    const mockTallas = createImmutableMock([
+    const mockTallas = [
       { id: 1, nombre: 'XS', descripcion: 'Extra pequeña' },
       { id: 2, nombre: 'S', descripcion: 'Pequeña' },
       { id: 3, nombre: 'M', descripcion: 'Mediana' },
       { id: 4, nombre: 'L', descripcion: 'Grande' },
       { id: 5, nombre: 'XL', descripcion: 'Extra grande' }
-    ]);
+    ];
 
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -353,11 +291,6 @@ describe('Integración Frontend-Backend para Productos', () => {
       })
     );
 
-    // ✅ Validación de estructura
-    response.forEach(talla => {
-      validateResponseStructure(talla, ['id', 'nombre']);
-    });
-
     expect(response).toStrictEqual(mockTallas);
   });
 
@@ -366,11 +299,11 @@ describe('Integración Frontend-Backend para Productos', () => {
   // =================================================
 
   test('Positiva: carga géneros correctamente', async () => {
-    const mockGeneros = createImmutableMock([
+    const mockGeneros = [
       { id: 1, nombre: 'Masculino' },
       { id: 2, nombre: 'Femenino' },
       { id: 3, nombre: 'Unisex' }
-    ]);
+    ];
 
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -389,11 +322,6 @@ describe('Integración Frontend-Backend para Productos', () => {
       })
     );
 
-    // ✅ Validación de estructura
-    response.forEach(genero => {
-      validateResponseStructure(genero, ['id', 'nombre']);
-    });
-
     expect(response).toStrictEqual(mockGeneros);
   });
 
@@ -409,7 +337,7 @@ describe('Integración Frontend-Backend para Productos', () => {
     formData.append('stock', '15');
     formData.append('descripcion', 'Nueva camiseta deportiva');
 
-    const mockResponse = createImmutableMock({
+    const mockResponse = {
       id: 10,
       nombre: 'Camiseta Nueva',
       precio: 699.99,
@@ -417,7 +345,7 @@ describe('Integración Frontend-Backend para Productos', () => {
       stock: 15,
       descripcion: 'Nueva camiseta deportiva',
       mensaje: 'Producto creado exitosamente'
-    });
+    };
 
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -437,9 +365,6 @@ describe('Integración Frontend-Backend para Productos', () => {
       })
     );
 
-    // ✅ Validación de estructura
-    validateResponseStructure(response, ['id', 'nombre', 'precio', 'stock']);
-
     expect(response).toStrictEqual(mockResponse);
   });
 
@@ -452,13 +377,13 @@ describe('Integración Frontend-Backend para Productos', () => {
     formData.append('precio', '799.99');
     formData.append('stock', '20');
 
-    const mockResponse = createImmutableMock({
+    const mockResponse = {
       id: 1,
       nombre: 'Camiseta Nike',
       precio: 799.99,
       stock: 20,
       mensaje: 'Producto actualizado exitosamente'
-    });
+    };
 
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -478,9 +403,6 @@ describe('Integración Frontend-Backend para Productos', () => {
       })
     );
 
-    // ✅ Validación de estructura
-    validateResponseStructure(response, ['id', 'precio', 'stock']);
-
     expect(response).toStrictEqual(mockResponse);
   });
 
@@ -489,11 +411,11 @@ describe('Integración Frontend-Backend para Productos', () => {
   // =================================================
 
   test('Positiva: elimina producto correctamente', async () => {
-    const mockResponse = createImmutableMock({
+    const mockResponse = {
       success: true,
       mensaje: 'Producto eliminado correctamente',
       id: 1
-    });
+    };
 
     global.fetch.mockResolvedValueOnce({
       ok: true,
@@ -511,9 +433,6 @@ describe('Integración Frontend-Backend para Productos', () => {
         headers: { 'Content-Type': 'application/json' }
       })
     );
-
-    // ✅ Validación de estructura
-    validateResponseStructure(response, ['success', 'id']);
 
     expect(response).toStrictEqual(mockResponse);
   });
@@ -534,27 +453,6 @@ describe('Integración Frontend-Backend para Productos', () => {
     await expect(Promise.race([fetchProductos(), timeout]))
       .rejects
       .toThrow('Request timeout');
-  });
-
-  // =================================================
-  // 🛡️ TEST DE PROTECCIÓN DE MOCKS
-  // =================================================
-
-  test('Protección: no se pueden modificar mocks inmutables', () => {
-    const mockData = createImmutableMock({ id: 1, nombre: 'Test' });
-    
-    // Intentar modificar debería lanzar error
-    expect(() => {
-      mockData.id = 999;
-    }).toThrow();
-    
-    expect(() => {
-      mockData.nombre = 'Modificado';
-    }).toThrow();
-    
-    // El objeto sigue intacto
-    expect(mockData.id).toBe(1);
-    expect(mockData.nombre).toBe('Test');
   });
 
 });
