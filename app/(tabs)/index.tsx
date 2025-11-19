@@ -130,12 +130,11 @@ const StockBajoScreen = ({ navigation }: StockBajoScreenProps) => {
     };
   };
 
-  const handleAjustarStock = (productoId: any) => {
-    if (navigation) {
-      navigation.navigate('EditarProducto', { id: productoId });
-    } else {
-      Alert.alert("Información", `Ajustar stock del producto ID: ${productoId}`);
-    }
+  const handleAjustarStock = (productoId: any, nombreProducto: string) => {
+    Alert.alert(
+      "Información del Producto",
+      `${nombreProducto}\n\nID: ${productoId}`
+    );
   };
 
   useEffect(() => {
@@ -147,14 +146,15 @@ const StockBajoScreen = ({ navigation }: StockBajoScreenProps) => {
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.primary} />
       
       <View style={styles.header}>
-        <View style={styles.headerSpacer} />
-        <Text style={styles.headerTitle}></Text>
-        <TouchableOpacity 
-          style={styles.refreshButton}
-          onPress={fetchProductosStockBajo}
-        >
-          <Feather name="refresh-cw" size={22} color="#fff" />
-        </TouchableOpacity>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Home</Text>
+          <TouchableOpacity 
+            style={styles.refreshButton}
+            onPress={fetchProductosStockBajo}
+          >
+            <Feather name="refresh-cw" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {loading && !refreshing ? (
@@ -172,11 +172,14 @@ const StockBajoScreen = ({ navigation }: StockBajoScreenProps) => {
               colors={[theme.colors.primary]}
             />
           }
+          showsVerticalScrollIndicator={false}
         >
           <View style={styles.productsContainer}>
             {productos.length === 0 ? (
               <View style={styles.emptyContainer}>
-                <MaterialIcons name="inventory-2" size={64} color="#ccc" />
+                <View style={styles.emptyIconContainer}>
+                  <MaterialIcons name="inventory-2" size={72} color="#ccc" />
+                </View>
                 <Text style={styles.emptyText}>No hay productos con stock bajo</Text>
                 <Text style={styles.emptySubtext}>
                   ¡Excelente! Todos los productos tienen stock suficiente
@@ -196,23 +199,29 @@ const StockBajoScreen = ({ navigation }: StockBajoScreenProps) => {
                         />
                       ) : (
                         <View style={styles.placeholderImage}>
-                          <MaterialIcons name="image" size={32} color="#ccc" />
+                          <MaterialIcons name="image" size={36} color="#ccc" />
                         </View>
                       )}
                     </View>
 
                     <View style={styles.productInfo}>
-                      <Text style={styles.productName} numberOfLines={1}>
+                      <Text style={styles.productName} numberOfLines={2}>
                         {producto.nombre_producto}
                       </Text>
                       
                       <View style={styles.productDetails}>
-                        <Text style={styles.detailText}>
-                          Color: {producto.color || 'N/A'}
-                        </Text>
-                        <Text style={styles.detailText}>
-                          Talla: {producto.talla || 'N/A'}
-                        </Text>
+                        <View style={styles.detailRow}>
+                          <MaterialIcons name="palette" size={14} color={theme.colors.textSecondary} />
+                          <Text style={styles.detailText}>
+                            {producto.color || 'N/A'}
+                          </Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                          <MaterialIcons name="straighten" size={14} color={theme.colors.textSecondary} />
+                          <Text style={styles.detailText}>
+                            {producto.talla || 'N/A'}
+                          </Text>
+                        </View>
                       </View>
 
                       <View style={styles.priceRow}>
@@ -226,7 +235,7 @@ const StockBajoScreen = ({ navigation }: StockBajoScreenProps) => {
                     </View>
 
                     <View style={styles.productActions}>
-                      <View style={[styles.stockBadge, { backgroundColor: stockStatus.color + '20' }]}>
+                      <View style={[styles.stockBadge, { backgroundColor: stockStatus.color + '15' }]}>
                         {stockStatus.showCircle && (
                           <View style={[styles.statusDot, { backgroundColor: stockStatus.color }]} />
                         )}
@@ -244,8 +253,9 @@ const StockBajoScreen = ({ navigation }: StockBajoScreenProps) => {
 
                       <TouchableOpacity 
                         style={styles.replenishButton}
-                        onPress={() => handleAjustarStock(producto.id)}
+                        onPress={() => handleAjustarStock(producto.id, producto.nombre_producto)}
                       >
+                        <MaterialIcons name="add-circle-outline" size={16} color={theme.colors.primary} />
                         <Text style={styles.replenishButtonText}>Reponer</Text>
                       </TouchableOpacity>
                     </View>
@@ -260,8 +270,8 @@ const StockBajoScreen = ({ navigation }: StockBajoScreenProps) => {
       {productos.length > 0 && (
         <View style={styles.footer}>
           <View style={styles.summaryItem}>
-            <View style={[styles.summaryIcon, { backgroundColor: theme.colors.danger + '20' }]}>
-              <MaterialIcons name="warning" size={20} color={theme.colors.danger} />
+            <View style={[styles.summaryIcon, { backgroundColor: theme.colors.danger + '15' }]}>
+              <MaterialIcons name="warning" size={22} color={theme.colors.danger} />
             </View>
             <View>
               <Text style={styles.summaryNumber}>
@@ -274,8 +284,8 @@ const StockBajoScreen = ({ navigation }: StockBajoScreenProps) => {
           <View style={styles.summaryDivider} />
           
           <View style={styles.summaryItem}>
-            <View style={[styles.summaryIcon, { backgroundColor: theme.colors.warning + '20' }]}>
-              <MaterialIcons name="inventory" size={20} color={theme.colors.warning} />
+            <View style={[styles.summaryIcon, { backgroundColor: theme.colors.warning + '15' }]}>
+              <MaterialIcons name="inventory" size={22} color={theme.colors.warning} />
             </View>
             <View>
               <Text style={styles.summaryNumber}>
@@ -298,29 +308,29 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.medium,
-    paddingHorizontal: theme.spacing.medium,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+  },
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  headerSpacer: {
-    width: 36,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '700',
     color: '#fff',
+    letterSpacing: 0.5,
   },
   refreshButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -329,28 +339,32 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   productsContainer: {
-    padding: theme.spacing.medium,
-    paddingBottom: 20,
+    padding: 18,
+    paddingBottom: 24,
   },
   productCard: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: theme.spacing.medium,
-    marginBottom: theme.spacing.medium,
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 16,
     flexDirection: 'row',
-    elevation: 3,
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.04)',
   },
   productImageContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 12,
-    backgroundColor: '#f0f0f0',
+    width: 80,
+    height: 80,
+    borderRadius: 14,
+    backgroundColor: '#f8f8f8',
     overflow: 'hidden',
-    marginRight: theme.spacing.medium,
+    marginRight: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
   },
   productImage: {
     width: '100%',
@@ -361,91 +375,105 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f8f8f8',
   },
   productInfo: {
     flex: 1,
     justifyContent: 'space-between',
+    paddingVertical: 2,
   },
   productName: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '700',
     color: theme.colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 8,
+    lineHeight: 22,
   },
   productDetails: {
-    marginBottom: 6,
+    marginBottom: 10,
+    gap: 2,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 3,
   },
   detailText: {
-    fontSize: 12,
+    fontSize: 14,
     color: theme.colors.textSecondary,
-    marginBottom: 2,
+    marginLeft: 6,
+    fontWeight: '500',
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   priceText: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: theme.colors.textPrimary,
-    marginRight: 8,
+    fontSize: 20,
+    fontWeight: '800',
+    color: theme.colors.primary,
+    marginRight: 10,
   },
   oldPrice: {
-    fontSize: 13,
+    fontSize: 14,
     color: theme.colors.textSecondary,
     textDecorationLine: 'line-through',
+    fontWeight: '500',
   },
   productActions: {
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    marginLeft: theme.spacing.small,
-    minWidth: 90,
+    marginLeft: 12,
+    minWidth: 95,
   },
   stockBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 20,
   },
   statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 4,
+    marginRight: 5,
   },
   stockText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   stockCount: {
     alignItems: 'center',
-    marginVertical: 4,
+    marginVertical: 6,
   },
   stockNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '800',
     color: theme.colors.danger,
-    lineHeight: 28,
+    lineHeight: 30,
   },
   stockLabel: {
     fontSize: 10,
     color: theme.colors.textSecondary,
     marginTop: -2,
+    fontWeight: '500',
   },
   replenishButton: {
     backgroundColor: '#fff',
-    borderWidth: 1.5,
-    borderColor: theme.colors.warning,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   replenishButtonText: {
-    color: theme.colors.warning,
+    color: theme.colors.primary,
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   loadingContainer: {
     flex: 1,
@@ -454,68 +482,80 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 14,
     fontSize: 16,
     color: theme.colors.textSecondary,
+    fontWeight: '500',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 80,
+    paddingVertical: 100,
+  },
+  emptyIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   emptyText: {
-    marginTop: 16,
-    fontSize: 18,
-    fontWeight: 'bold',
+    marginTop: 10,
+    fontSize: 19,
+    fontWeight: '700',
     color: '#999',
   },
   emptySubtext: {
-    marginTop: 8,
-    fontSize: 14,
+    marginTop: 10,
+    fontSize: 15,
     color: '#bbb',
     textAlign: 'center',
     paddingHorizontal: 40,
+    lineHeight: 22,
   },
   footer: {
     backgroundColor: '#fff',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: theme.spacing.medium,
+    paddingVertical: 18,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    elevation: 8,
+    borderTopColor: 'rgba(0,0,0,0.08)',
+    elevation: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
   summaryItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   summaryIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   summaryNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '800',
     color: theme.colors.textPrimary,
   },
   summaryLabel: {
     fontSize: 12,
     color: theme.colors.textSecondary,
+    fontWeight: '500',
   },
   summaryDivider: {
     width: 1,
-    height: 40,
-    backgroundColor: theme.colors.border,
+    height: 45,
+    backgroundColor: 'rgba(0,0,0,0.08)',
   },
 });
 

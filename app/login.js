@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
   Image,
   Modal,
-  Alert,
   ScrollView,
 } from "react-native";
 import imagen from "../assets/images/gislive.jpg";
@@ -82,14 +81,12 @@ export default function Login() {
 
       // Validación de tipo de usuario
       if (data.tipo === "admin") {
-        // ✅ AQUÍ ESTÁ EL CAMBIO IMPORTANTE
         await signIn({
           id: data.id,
           tipo: data.tipo,
           correo: email.trim(),
-          ...data // Guarda cualquier otro dato que venga del backend
+          ...data
         });
-        // La navegación se hace automáticamente por el AuthContext
       } else {
         showCustomAlert(
           "Acceso denegado",
@@ -115,6 +112,7 @@ export default function Login() {
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         {/* Encabezado */}
         <View style={styles.topContainer}>
@@ -218,109 +216,137 @@ const styles = StyleSheet.create({
   },
   topContainer: {
     alignItems: "center",
-    marginTop: 60,
+    marginTop: 70,
+    marginBottom: 20,
   },
   logo: {
-    width: 160,
-    height: 160,
-    borderRadius: 100,
+    width: 170,
+    height: 170,
+    borderRadius: 85,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "700",
     color: "#fff",
     textAlign: "center",
-    marginTop: 10,
+    marginTop: 20,
+    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 17,
+    fontSize: 16,
     color: "#fff",
     textAlign: "center",
-    marginTop: 5,
-    paddingHorizontal: 25,
+    marginTop: 8,
+    paddingHorizontal: 30,
+    lineHeight: 22,
   },
   footer: {
+    flex: 1,
     backgroundColor: "#fff",
-    borderTopLeftRadius: 45,
-    borderTopRightRadius: 45,
-    paddingVertical: 40,
-    paddingHorizontal: 35,
-    marginTop: 40,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    paddingVertical: 50,
+    paddingHorizontal: 30,
+    marginTop: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     elevation: 15,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderColor: "#ddd",
-    borderWidth: 1,
-    borderRadius: 14,
-    marginBottom: 20,
-    backgroundColor: "#fff",
-    paddingHorizontal: 10,
+    borderColor: "#e0e0e0",
+    borderWidth: 1.5,
+    borderRadius: 15,
+    marginBottom: 18,
+    backgroundColor: "#fafafa",
+    paddingHorizontal: 15,
+    height: 56,
   },
   inputIcon: {
-    marginRight: 8,
+    marginRight: 12,
   },
   input: {
     flex: 1,
-    height: 50,
     fontSize: 16,
     color: "#000",
   },
   iconButton: {
-    paddingHorizontal: 10,
+    padding: 8,
   },
   button: {
     backgroundColor: "#007AFF",
     paddingVertical: 16,
-    borderRadius: 14,
+    borderRadius: 15,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 15,
+    shadowColor: "#007AFF",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 17,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "700",
+    letterSpacing: 0.5,
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
   alertBox: {
     backgroundColor: "#fff",
-    width: "80%",
-    padding: 25,
-    borderRadius: 20,
+    width: "85%",
+    padding: 30,
+    borderRadius: 25,
     alignItems: "center",
-    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 15,
   },
   alertIcon: {
-    marginBottom: 10,
+    marginBottom: 15,
   },
   alertTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "700",
     color: "#007AFF",
     textAlign: "center",
-    marginBottom: 5,
+    marginBottom: 8,
   },
   alertMessage: {
     fontSize: 16,
-    color: "#333",
+    color: "#666",
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 25,
+    lineHeight: 22,
   },
   alertButton: {
     backgroundColor: "#007AFF",
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 25,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    shadowColor: "#007AFF",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   alertButtonText: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 17,
+    fontWeight: "700",
   },
 });
