@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "appMovilGis",
-    "slug": "AppmovilGis",
+    "name": "Movil Gislive",
+    "slug": "Movil Gislive",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/LogoGL.jpg",

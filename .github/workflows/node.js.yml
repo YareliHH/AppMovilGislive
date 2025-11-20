@@ -176,7 +176,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gislive-Android
-          path: app-release.apk
+          path: Gislive.apk
           retention-days: 30
 
   deploy:

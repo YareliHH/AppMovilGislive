@@ -251,49 +251,61 @@ const ProductFormModal = ({
         </View>
 
         <ScrollView style={styles.modalContent}>
-          <TextInput
-            style={[styles.input, errors.nombre_producto && styles.inputError]}
-            placeholder="Nombre del producto *"
-            value={values.nombre_producto}
-            onChangeText={(text) => dispatchForm({ type: "SET_VALUES", payload: { nombre_producto: text } })}
-          />
-          {errors.nombre_producto && (
-            <Text style={styles.errorText}>{errors.nombre_producto}</Text>
-          )}
+          <View style={styles.formField}>
+            <Text style={styles.fieldLabel}>Nombre del producto *</Text>
+            <TextInput
+              style={[styles.input, errors.nombre_producto && styles.inputError]}
+              placeholder="Ingrese el nombre"
+              value={values.nombre_producto}
+              onChangeText={(text) => dispatchForm({ type: "SET_VALUES", payload: { nombre_producto: text } })}
+            />
+            {errors.nombre_producto && (
+              <Text style={styles.errorText}>{errors.nombre_producto}</Text>
+            )}
+          </View>
 
-          <TextInput
-            style={[styles.input, styles.textArea, errors.descripcion && styles.inputError]}
-            placeholder="Descripción *"
-            value={values.descripcion}
-            onChangeText={(text) => dispatchForm({ type: "SET_VALUES", payload: { descripcion: text } })}
-            multiline
-            numberOfLines={4}
-          />
-          {errors.descripcion && (
-            <Text style={styles.errorText}>{errors.descripcion}</Text>
-          )}
+          <View style={styles.formField}>
+            <Text style={styles.fieldLabel}>Descripción *</Text>
+            <TextInput
+              style={[styles.input, styles.textArea, errors.descripcion && styles.inputError]}
+              placeholder="Ingrese la descripción"
+              value={values.descripcion}
+              onChangeText={(text) => dispatchForm({ type: "SET_VALUES", payload: { descripcion: text } })}
+              multiline
+              numberOfLines={4}
+            />
+            {errors.descripcion && (
+              <Text style={styles.errorText}>{errors.descripcion}</Text>
+            )}
+          </View>
 
-          <TextInput
-            style={[styles.input, errors.precio && styles.inputError]}
-            placeholder="Precio *"
-            value={values.precio}
-            onChangeText={(text) => dispatchForm({ type: "SET_VALUES", payload: { precio: text } })}
-            keyboardType="numeric"
-          />
-          {errors.precio && (
-            <Text style={styles.errorText}>{errors.precio}</Text>
-          )}
+          <View style={styles.formField}>
+            <Text style={styles.fieldLabel}>Precio *</Text>
+            <TextInput
+              style={[styles.input, errors.precio && styles.inputError]}
+              placeholder="0.00"
+              value={values.precio}
+              onChangeText={(text) => dispatchForm({ type: "SET_VALUES", payload: { precio: text } })}
+              keyboardType="numeric"
+            />
+            {errors.precio && (
+              <Text style={styles.errorText}>{errors.precio}</Text>
+            )}
+          </View>
 
-          <TextInput
-            style={[styles.input, errors.stock && styles.inputError]}
-            placeholder="Stock *"
-            value={values.stock}
-            onChangeText={(text) => dispatchForm({ type: "SET_VALUES", payload: { stock: text } })}
-            keyboardType="numeric"
-          />
-          {errors.stock && (
-            <Text style={styles.errorText}>{errors.stock}</Text>
-          )}
+          <View style={styles.formField}>
+            <Text style={styles.fieldLabel}>Stock *</Text>
+            <TextInput
+              style={[styles.input, errors.stock && styles.inputError]}
+              placeholder="0"
+              value={values.stock}
+              onChangeText={(text) => dispatchForm({ type: "SET_VALUES", payload: { stock: text } })}
+              keyboardType="numeric"
+            />
+            {errors.stock && (
+              <Text style={styles.errorText}>{errors.stock}</Text>
+            )}
+          </View>
 
           <View style={styles.pickerContainer}>
             <Text style={styles.pickerLabel}>Categoría *</Text>
@@ -309,8 +321,8 @@ const ProductFormModal = ({
                 ))}
               </Picker>
             </View>
+            {errors.id_categoria && <Text style={styles.errorText}>{errors.id_categoria}</Text>}
           </View>
-          {errors.id_categoria && <Text style={styles.errorText}>{errors.id_categoria}</Text>}
 
           <View style={styles.pickerContainer}>
             <Text style={styles.pickerLabel}>Color *</Text>
@@ -326,8 +338,8 @@ const ProductFormModal = ({
                 ))}
               </Picker>
             </View>
+            {errors.id_color && <Text style={styles.errorText}>{errors.id_color}</Text>}
           </View>
-          {errors.id_color && <Text style={styles.errorText}>{errors.id_color}</Text>}
 
           <View style={styles.pickerContainer}>
             <Text style={styles.pickerLabel}>Talla *</Text>
@@ -343,8 +355,8 @@ const ProductFormModal = ({
                 ))}
               </Picker>
             </View>
+            {errors.id_talla && <Text style={styles.errorText}>{errors.id_talla}</Text>}
           </View>
-          {errors.id_talla && <Text style={styles.errorText}>{errors.id_talla}</Text>}
 
           <View style={styles.pickerContainer}>
             <Text style={styles.pickerLabel}>Género *</Text>
@@ -360,8 +372,8 @@ const ProductFormModal = ({
                 ))}
               </Picker>
             </View>
+            {errors.id_genero && <Text style={styles.errorText}>{errors.id_genero}</Text>}
           </View>
-          {errors.id_genero && <Text style={styles.errorText}>{errors.id_genero}</Text>}
 
           <View style={styles.imageSection}>
             <Text style={styles.sectionTitle}>Imágenes del Producto</Text>
@@ -1007,7 +1019,7 @@ const ProductoFormMejorado = () => {
 
   const handleFilterChange = debounce((name, value) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
-    setPage(0); // Reset page on filter change
+    setPage(0);
   }, 300);
 
   const clearFilters = () => {
@@ -1064,7 +1076,6 @@ const ProductoFormMejorado = () => {
   useEffect(() => {
     fetchProductos();
     fetchCatalogos();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -1329,6 +1340,7 @@ const styles = StyleSheet.create({
   },
   filtersContent: {
     marginTop: theme.spacing.medium,
+    gap: 12,
   },
   input: {
     backgroundColor: '#fff',
@@ -1337,7 +1349,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    marginBottom: 12,
   },
   inputError: {
     borderColor: theme.colors.error,
@@ -1345,9 +1356,17 @@ const styles = StyleSheet.create({
   errorText: {
     color: theme.colors.error,
     fontSize: 12,
-    marginTop: -8,
-    marginBottom: 8,
+    marginTop: 4,
     marginLeft: 4,
+  },
+  formField: {
+    marginBottom: theme.spacing.medium,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#424242',
+    marginBottom: theme.spacing.small,
   },
   textArea: {
     height: 100,
@@ -1397,13 +1416,13 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: `rgba(${theme.colors.primary.replace('#', '')}, 0.1)`,
+    backgroundColor: 'rgba(2, 119, 189, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: theme.spacing.small,
   },
   deleteButton: {
-    backgroundColor: `rgba(${theme.colors.danger.replace('#', '')}, 0.1)`,
+    backgroundColor: 'rgba(211, 47, 47, 0.1)',
   },
   productDescription: {
     fontSize: 14,
@@ -1451,7 +1470,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   tag: {
-    backgroundColor: `rgba(${theme.colors.primary.replace('#', '')}, 0.1)`,
+    backgroundColor: 'rgba(2, 119, 189, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -1526,7 +1545,6 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   modalContent: {
-    flex: 1,
     padding: 20,
   },
   pickerContainer: {
@@ -1558,7 +1576,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   imagePickerButton: {
-    backgroundColor: `rgba(${theme.colors.primary.replace('#', '')}, 0.1)`,
+    backgroundColor: 'rgba(2, 119, 189, 0.1)',
     borderWidth: 2,
     borderColor: theme.colors.primary,
     borderStyle: 'dashed',
@@ -1594,7 +1612,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: `rgba(${theme.colors.danger.replace('#', '')}, 0.9)`,
+    backgroundColor: 'rgba(211, 47, 47, 0.9)',
     width: 24,
     height: 24,
     borderRadius: 12,
