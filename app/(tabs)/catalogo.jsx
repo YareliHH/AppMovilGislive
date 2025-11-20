@@ -1081,7 +1081,7 @@ const ProductoFormMejorado = () => {
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.primary} />
       
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Gestión de Productoos</Text>
+        <Text style={styles.headerTitle}>Gestión de Productos</Text>
         <TouchableOpacity 
           accessible={true}
           accessibilityLabel="Agregar nuevo producto"
@@ -1119,11 +1119,6 @@ const ProductoFormMejorado = () => {
                 }
               }}
             >
-              <MaterialIcons 
-                name="male" 
-                size={20} 
-                color={filters.genero === generos.find(g => g.genero.toLowerCase() === 'hombre')?.id ? '#fff' : theme.colors.primary} 
-              />
               <Text style={[
                 styles.genderButtonText,
                 filters.genero === generos.find(g => g.genero.toLowerCase() === 'hombre')?.id && styles.genderButtonTextActive
@@ -1146,11 +1141,6 @@ const ProductoFormMejorado = () => {
                 }
               }}
             >
-              <MaterialIcons 
-                name="female" 
-                size={20} 
-                color={filters.genero === generos.find(g => g.genero.toLowerCase() === 'mujer')?.id ? '#fff' : theme.colors.primary} 
-              />
               <Text style={[
                 styles.genderButtonText,
                 filters.genero === generos.find(g => g.genero.toLowerCase() === 'mujer')?.id && styles.genderButtonTextActive
